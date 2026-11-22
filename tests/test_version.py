@@ -1,5 +1,8 @@
+import re
+
 import smartevse
 
 
-def test_version_is_a_non_empty_string():
-    assert isinstance(smartevse.__version__, str) and smartevse.__version__
+def test_version_has_the_release_format():
+    # scripts/build-zip.sh accepts the same characters.
+    assert re.fullmatch(r"[0-9A-Za-z.+-]+", smartevse.__version__)

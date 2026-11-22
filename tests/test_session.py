@@ -34,8 +34,7 @@ def test_ev_meter_energy_comes_from_smartevse():
 def test_ev_meter_energy_is_zero_when_disconnected_or_unknown():
     sess = Session()
     r = PowerReading(0, 0, 0, 0, 0)
-    s = EvseState(state="Ready to Charge", plug="Disconnected",
-                  ev_energy_wh=4520)
+    s = EvseState(state="Ready to Charge", plug="Disconnected", ev_energy_wh=4520)
     sess.update(s, r, True, 0)
     assert sess.energy_kwh == 0
     s = EvseState(state="Charging", plug="Connected", ev_energy_wh=None)

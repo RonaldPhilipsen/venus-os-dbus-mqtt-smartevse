@@ -3,6 +3,7 @@
 No dbus imports. The entry script passes in the D-Bus calls and the
 D-Bus exception type, so the tests run without dbus.
 """
+
 import logging
 from typing import Any, Callable, Iterable, Optional, Tuple, Type
 
@@ -56,8 +57,7 @@ class BusReader:
 class GridEnergy:
     """Reads /Ac/Energy/Forward of the first com.victronenergy.grid.* service."""
 
-    def __init__(self, list_names: Callable[[], Iterable[Any]],
-                 reader: BusReader) -> None:
+    def __init__(self, list_names: Callable[[], Iterable[Any]], reader: BusReader) -> None:
         self._list_names = list_names
         self._reader = reader
         self._service = None  # type: Optional[str]
@@ -70,8 +70,7 @@ class GridEnergy:
         """Find a grid meter service if none is known. Returns True for GLib."""
         if self._service is None:
             try:
-                names = sorted(str(n) for n in self._list_names()
-                               if str(n).startswith(GRID_PREFIX))
+                names = sorted(str(n) for n in self._list_names() if str(n).startswith(GRID_PREFIX))
             except self._reader.errors:
                 return True
             if names:
@@ -85,16 +84,14 @@ class GridEnergy:
         try:
             return number(self._reader.read(self._service, GRID_ENERGY_PATH))
         except self._reader.errors:
-            log.info("grid meter %s did not reply, scanning again",
-                     self._service)
+            log.info("grid meter %s did not reply, scanning again", self._service)
             self._service = None
             self.rescan()
             return None
 
 
 class Feed:
-    def __init__(self, read: Callable[[], Optional[str]],
-                 publish: Callable[[str], None]) -> None:
+    def __init__(self, read: Callable[[], Optional[str]], publish: Callable[[str], None]) -> None:
         self._read = read
         self._publish = publish
 

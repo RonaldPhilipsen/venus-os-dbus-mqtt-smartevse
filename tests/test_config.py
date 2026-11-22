@@ -45,13 +45,16 @@ def test_percent_in_password_is_literal(tmp_path):
     assert load_config(str(p)).mqtt_password == "pa%ss"
 
 
-@pytest.mark.parametrize("section,key,value", [
-    ("BATTERY", "IntervalSeconds", "0"),
-    ("GRID", "IntervalSeconds", "-2"),
-    ("MQTT", "OfflineTimeoutSeconds", "0"),
-    ("BATTERY", "IntervalSeconds", "nan"),
-    ("GRID", "IntervalSeconds", "inf"),
-])
+@pytest.mark.parametrize(
+    "section,key,value",
+    [
+        ("BATTERY", "IntervalSeconds", "0"),
+        ("GRID", "IntervalSeconds", "-2"),
+        ("MQTT", "OfflineTimeoutSeconds", "0"),
+        ("BATTERY", "IntervalSeconds", "nan"),
+        ("GRID", "IntervalSeconds", "inf"),
+    ],
+)
 def test_interval_and_timeout_must_be_positive(tmp_path, section, key, value):
     p = tmp_path / "c.ini"
     text = "[MQTT]\nHost = h\nTopicPrefix = x\n"

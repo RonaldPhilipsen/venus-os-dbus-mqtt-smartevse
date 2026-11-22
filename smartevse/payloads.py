@@ -3,6 +3,7 @@
 Currents are in deciamps, energy in Wh, as the SmartEVSE expects.
 No dbus or paho imports.
 """
+
 import math
 from typing import Optional
 
@@ -29,8 +30,13 @@ def battery_payload(power_w: Optional[float], nominal_voltage: float) -> Optiona
     return str(_deciamps(power_w, nominal_voltage))
 
 
-def grid_payload(l1_w: Optional[float], l2_w: Optional[float], l3_w: Optional[float],
-                 energy_kwh: Optional[float], nominal_voltage: float) -> Optional[str]:
+def grid_payload(
+    l1_w: Optional[float],
+    l2_w: Optional[float],
+    l3_w: Optional[float],
+    energy_kwh: Optional[float],
+    nominal_voltage: float,
+) -> Optional[str]:
     """Return "L1:L2:L3:W:WH" for the mains meter, or None if the data is unusable.
 
     L1 must be known. A missing L2 or L3 counts as 0 A and 0 W. A missing

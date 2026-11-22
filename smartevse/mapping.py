@@ -1,4 +1,5 @@
 """Mapping from SmartEVSE state to Victron values. No dbus or paho imports."""
+
 from typing import NamedTuple, Optional
 
 from smartevse.state import EvseState
@@ -61,8 +62,7 @@ class PowerReading(NamedTuple):
     current_a: float
 
 
-def power_reading(s: EvseState, has_ev_meter: bool,
-                  nominal_voltage: float) -> PowerReading:
+def power_reading(s: EvseState, has_ev_meter: bool, nominal_voltage: float) -> PowerReading:
     if has_ev_meter:
         return _metered(s)
     return _estimated(s, nominal_voltage)

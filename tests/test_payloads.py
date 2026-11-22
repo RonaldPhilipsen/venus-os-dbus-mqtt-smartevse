@@ -6,7 +6,7 @@ from smartevse.payloads import battery_payload, grid_payload
 def test_battery():
     assert battery_payload(2300, 230) == "100"
     assert battery_payload(-460, 230) == "-20"
-    assert battery_payload(None, 230) is None                # Review Focus 4
+    assert battery_payload(None, 230) is None  # Review Focus 4
 
 
 def test_battery_non_finite_is_none():
@@ -28,8 +28,8 @@ def test_grid_single_phase_and_missing_energy():
 
 
 def test_grid_invalid():
-    assert grid_payload(None, 0, 0, 1, 230) is None          # Review Focus 4
-    assert grid_payload(46000, 0, 0, 1, 230) is None         # 2000 dA is out of range
+    assert grid_payload(None, 0, 0, 1, 230) is None  # Review Focus 4
+    assert grid_payload(46000, 0, 0, 1, 230) is None  # 2000 dA is out of range
 
 
 def test_grid_phase_range_is_exclusive():

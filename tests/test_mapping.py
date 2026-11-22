@@ -1,23 +1,43 @@
 import pytest
 
-from smartevse.mapping import (power_reading, victron_mode,
-                               victron_set_current, victron_start_stop,
-                               victron_status)
+from smartevse.mapping import (
+    power_reading,
+    victron_mode,
+    victron_set_current,
+    victron_start_stop,
+    victron_status,
+)
 from smartevse.state import EvseState
 
 
-@pytest.mark.parametrize("evse,last,expected", [
-    ("Smart", 1, 0), ("Normal", 1, 0), ("Solar", 0, 1),
-    ("Pause", 1, 1), ("Off", 0, 0), ("N/A", 1, 1), (None, 1, 1),
-])
+@pytest.mark.parametrize(
+    "evse,last,expected",
+    [
+        ("Smart", 1, 0),
+        ("Normal", 1, 0),
+        ("Solar", 0, 1),
+        ("Pause", 1, 1),
+        ("Off", 0, 0),
+        ("N/A", 1, 1),
+        (None, 1, 1),
+    ],
+)
 def test_victron_mode(evse, last, expected):
     assert victron_mode(evse, last) == expected
 
 
-@pytest.mark.parametrize("evse,last,expected", [
-    ("Smart", 0, 1), ("Solar", 0, 1), ("Pause", 1, 0), ("Off", 1, 0),
-    ("N/A", 1, 1), (None, 0, 0), ("Normal", 0, 1),
-])
+@pytest.mark.parametrize(
+    "evse,last,expected",
+    [
+        ("Smart", 0, 1),
+        ("Solar", 0, 1),
+        ("Pause", 1, 0),
+        ("Off", 1, 0),
+        ("N/A", 1, 1),
+        (None, 0, 0),
+        ("Normal", 0, 1),
+    ],
+)
 def test_start_stop(evse, last, expected):
     assert victron_start_stop(evse, last) == expected
 

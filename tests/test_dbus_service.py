@@ -7,14 +7,21 @@ from smartevse.mapping import PowerReading
 from smartevse.session import Session
 from smartevse.state import EvseState
 
-ctrl = Controller(lambda n, p: None, lambda m: None, 1, 60,
-                  logging.getLogger("t"))
+ctrl = Controller(lambda n, p: None, lambda m: None, 1, 60, logging.getLogger("t"))
 
 
 def test_publish_state_when_available():
     svc = {"/UpdateIndex": 255}
-    s = EvseState(online=True, mode="Smart", state="Charging", plug="Connected",
-                  error="None", charge_current_da=160, override_da=0, max_current_da=320)
+    s = EvseState(
+        online=True,
+        mode="Smart",
+        state="Charging",
+        plug="Connected",
+        error="None",
+        charge_current_da=160,
+        override_da=0,
+        max_current_da=320,
+    )
     publish_state(svc, s, PowerReading(3680, 3680, 0, 0, 16.0), Session(), ctrl, True)
     assert svc["/Connected"] == 1 and svc["/Status"] == 2 and svc["/Mode"] == 0
     assert svc["/Ac/Power"] == 3680 and svc["/MaxCurrent"] == 32 and svc["/SetCurrent"] == 16
@@ -30,10 +37,12 @@ def test_publish_state_when_unavailable():
 def test_feed_skips_none():
     out = []
     assert Feed(lambda: None, out.append).tick() is True and out == []
-    Feed(lambda: "100", out.append).tick(); assert out == ["100"]
+    Feed(lambda: "100", out.append).tick()
+    assert out == ["100"]
 
 
 # Extra checks beyond the brief.
+
 
 def test_unavailable_clears_every_reading_path():
     svc = {"/UpdateIndex": 7}
@@ -44,9 +53,17 @@ def test_unavailable_clears_every_reading_path():
 
 def test_available_writes_every_reading_path():
     svc = {"/UpdateIndex": 0}
-    s = EvseState(online=True, mode="Solar", state="Charging", plug="Connected",
-                  error="None", charge_current_da=60, override_da=0,
-                  max_current_da=160, temp_c=41)
+    s = EvseState(
+        online=True,
+        mode="Solar",
+        state="Charging",
+        plug="Connected",
+        error="None",
+        charge_current_da=60,
+        override_da=0,
+        max_current_da=160,
+        temp_c=41,
+    )
     publish_state(svc, s, PowerReading(1380, 1380, 0, 0, 6.0), Session(), ctrl, True)
     assert set(PATHS) <= set(svc)
     assert svc["/MCU/Temperature"] == 41 and svc["/Current"] == 6.0

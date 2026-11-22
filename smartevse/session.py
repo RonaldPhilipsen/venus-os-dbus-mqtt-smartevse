@@ -1,5 +1,4 @@
 """Session counters for charging time and energy. No dbus or paho imports."""
-from typing import Optional
 
 from smartevse.mapping import PowerReading
 from smartevse.state import EvseState
@@ -13,8 +12,7 @@ class Session:
         self._ev_energy_kwh = 0.0
         self._has_ev_meter = False
 
-    def update(self, s: EvseState, reading: PowerReading,
-               has_ev_meter: bool, now: float) -> None:
+    def update(self, s: EvseState, reading: PowerReading, has_ev_meter: bool, now: float) -> None:
         # The first call only stores the time. A clock step back adds nothing.
         dt = 0.0 if self._last_time is None else max(0.0, now - self._last_time)
         self._last_time = now

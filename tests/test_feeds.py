@@ -1,3 +1,5 @@
+from typing import List
+
 from smartevse.feeds import BusReader, Feed, GridEnergy
 from smartevse.payloads import battery_payload, grid_payload
 
@@ -9,7 +11,7 @@ class BusError(Exception):
 class FakeBus:
     def __init__(self, values=None, names=()):
         self.values = dict(values or {})
-        self.names = list(names)
+        self.names: List[str] = list(names)
         self.calls = 0
 
     def get_value(self, service, path):
@@ -29,8 +31,7 @@ BATTERY = (SYSTEM, "/Dc/Battery/Power")
 
 def battery_feed(bus, out):
     reader = BusReader(bus.get_value, (BusError,))
-    return Feed(lambda: battery_payload(reader.number(*BATTERY), 230),
-                out.append)
+    return Feed(lambda: battery_payload(reader.number(*BATTERY), 230), out.append)
 
 
 def test_reader_reads_current_value_each_call():
@@ -62,15 +63,13 @@ def test_battery_feed_stops_when_system_service_is_gone():
 def test_feed_publishes_nothing_when_reader_returns_none_or_raises():
     out = []
     reader = BusReader(lambda s, p: None, (BusError,))
-    Feed(lambda: battery_payload(reader.number(*BATTERY), 230),
-         out.append).tick()
+    Feed(lambda: battery_payload(reader.number(*BATTERY), 230), out.append).tick()
 
     def boom(service, path):
         raise RuntimeError("unexpected")
 
     reader = BusReader(boom, (BusError,))
-    assert Feed(lambda: battery_payload(reader.number(*BATTERY), 230),
-                out.append).tick() is True
+    assert Feed(lambda: battery_payload(reader.number(*BATTERY), 230), out.append).tick() is True
     assert out == []
 
 
@@ -79,9 +78,14 @@ def test_grid_feed_stops_without_system_service():
     reader = BusReader(bus.get_value, (BusError,))
     energy = GridEnergy(bus.list_names, reader)
     out = []
-    Feed(lambda: grid_payload(
-        *[reader.number(SYSTEM, "/Ac/Grid/L%d/Power" % n) for n in (1, 2, 3)],
-        energy_kwh=energy.kwh(), nominal_voltage=230), out.append).tick()
+    Feed(
+        lambda: grid_payload(
+            *[reader.number(SYSTEM, "/Ac/Grid/L%d/Power" % n) for n in (1, 2, 3)],
+            energy_kwh=energy.kwh(),
+            nominal_voltage=230,
+        ),
+        out.append,
+    ).tick()
     assert out == []
 
 
@@ -91,8 +95,7 @@ ENERGY = "/Ac/Energy/Forward"
 
 
 def test_grid_energy_scans_and_reads():
-    bus = FakeBus({(GRID_A, ENERGY): 12.5},
-                  names=["com.victronenergy.system", GRID_A])
+    bus = FakeBus({(GRID_A, ENERGY): 12.5}, names=["com.victronenergy.system", GRID_A])
     energy = GridEnergy(bus.list_names, BusReader(bus.get_value, (BusError,)))
     assert energy.kwh() is None  # no scan yet
     assert energy.rescan() is True and energy.service == GRID_A

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Venus OS driver: SmartEVSE over MQTT as a Victron EV charger on D-Bus."""
+
 import configparser
 import logging
 import os
@@ -22,8 +23,7 @@ from vedbus import VeDbusService  # noqa: E402
 from smartevse import __version__  # noqa: E402
 from smartevse.config import load_config, serial_from_prefix  # noqa: E402
 from smartevse.controller import Controller  # noqa: E402
-from smartevse.dbus_service import (PATHS, WRITEABLE_PATHS,  # noqa: E402
-                                    publish_state)
+from smartevse.dbus_service import PATHS, WRITEABLE_PATHS, publish_state  # noqa: E402
 from smartevse.feeds import BusReader, Feed, GridEnergy  # noqa: E402
 from smartevse.mapping import MODE_AUTO, MODE_MANUAL, power_reading  # noqa: E402
 from smartevse.mqtt_client import SmartEvseMqtt  # noqa: E402
@@ -67,16 +67,19 @@ def bus_reader(bus):
     A VeDbusItemImport binds to the owner at creation time. After a restart
     of the service it keeps a stale value, so the feeds do not use it.
     """
+
     def get_value(service, path):
-        return unwrap_dbus_value(bus.call_blocking(
-            service, path, BUS_ITEM, "GetValue", "", [],
-            timeout=DBUS_TIMEOUT_S))
+        return unwrap_dbus_value(
+            bus.call_blocking(service, path, BUS_ITEM, "GetValue", "", [], timeout=DBUS_TIMEOUT_S)
+        )
+
     return BusReader(get_value, (dbus.exceptions.DBusException,))
 
 
 def main():
-    logging.basicConfig(stream=sys.stdout, level=logging.WARNING,
-                        format="%(levelname)s %(name)s %(message)s")
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.WARNING, format="%(levelname)s %(name)s %(message)s"
+    )
     try:
         start()
     except Exception as e:
@@ -94,20 +97,18 @@ def start():
     except (ValueError, KeyError, configparser.Error) as e:
         fatal("invalid config file %s: %s", config_path, e)
     if cfg.nominal_voltage <= 0:
-        fatal("NominalVoltage must be greater than 0, not %s",
-              cfg.nominal_voltage)
+        fatal("NominalVoltage must be greater than 0, not %s", cfg.nominal_voltage)
 
     DBusGMainLoop(set_as_default=True)
     bus = system_bus()
 
     # 1. D-Bus service with all paths, then register.
-    svc = make_service("com.victronenergy.evcharger.smartevse_%d"
-                       % cfg.device_instance)
+    svc = make_service("com.victronenergy.evcharger.smartevse_%d" % cfg.device_instance)
     svc.add_path("/Mgmt/ProcessName", __file__)
-    svc.add_path("/Mgmt/ProcessVersion",
-                 "%s on Python %s" % (__version__, platform.python_version()))
-    svc.add_path("/Mgmt/Connection",
-                 "MQTT %s:%d" % (cfg.mqtt_host, cfg.mqtt_port))
+    svc.add_path(
+        "/Mgmt/ProcessVersion", "%s on Python %s" % (__version__, platform.python_version())
+    )
+    svc.add_path("/Mgmt/Connection", "MQTT %s:%d" % (cfg.mqtt_host, cfg.mqtt_port))
     svc.add_path("/DeviceInstance", cfg.device_instance)
     svc.add_path("/ProductId", 0xFFFF)
     svc.add_path("/ProductName", "SmartEVSE")
@@ -138,8 +139,13 @@ def start():
 
     for path, fmt in PATHS.items():
         writeable = path in WRITEABLE_PATHS
-        svc.add_path(path, None, gettextcallback=fmt, writeable=writeable,
-                     onchangecallback=on_write if writeable else None)
+        svc.add_path(
+            path,
+            None,
+            gettextcallback=fmt,
+            writeable=writeable,
+            onchangecallback=on_write if writeable else None,
+        )
 
     if hasattr(svc, "register"):
         svc.register()
@@ -147,9 +153,9 @@ def start():
     # 2. Stored Victron mode in localsettings. Default 1 (Auto).
     settings = SettingsDevice(
         bus,
-        {"mode": ["/Settings/Devices/smartevse_%d/Mode" % cfg.device_instance,
-                  MODE_AUTO, 0, 2]},
-        lambda setting, old, new: None)
+        {"mode": ["/Settings/Devices/smartevse_%d/Mode" % cfg.device_instance, MODE_AUTO, 0, 2]},
+        lambda setting, old, new: None,
+    )
     initial_mode = int(settings["mode"])
     if initial_mode not in (MODE_MANUAL, MODE_AUTO):
         initial_mode = MODE_AUTO
@@ -169,8 +175,7 @@ def start():
         return False
 
     mqtt = SmartEvseMqtt(cfg, on_message, on_link, schedule=GLib.idle_add)
-    controller = Controller(mqtt.publish_set, store_mode, initial_mode,
-                            cfg.offline_timeout_s, log)
+    controller = Controller(mqtt.publish_set, store_mode, initial_mode, cfg.offline_timeout_s, log)
     holder["controller"] = controller
 
     # 4. Values from com.victronenergy.system and the grid meter. Each feed
@@ -183,8 +188,7 @@ def start():
             now = time.time()
             controller.check_pending(now)
             available = is_available(state, now, cfg.offline_timeout_s)
-            reading = power_reading(state, cfg.has_ev_meter,
-                                    cfg.nominal_voltage)
+            reading = power_reading(state, cfg.has_ev_meter, cfg.nominal_voltage)
             if available:
                 session.update(state, reading, cfg.has_ev_meter, now)
             else:
@@ -200,11 +204,11 @@ def start():
     if cfg.battery_enabled:
         battery = Feed(
             lambda: battery_payload(
-                reader.number(SYSTEM, "/Dc/Battery/Power"),
-                cfg.nominal_voltage),
-            lambda p: mqtt.publish_set("HomeBatteryCurrent", p))
-        GLib.timeout_add(max(1, int(cfg.battery_interval_s * 1000)),
-                         battery.tick)
+                reader.number(SYSTEM, "/Dc/Battery/Power"), cfg.nominal_voltage
+            ),
+            lambda p: mqtt.publish_set("HomeBatteryCurrent", p),
+        )
+        GLib.timeout_add(max(1, int(cfg.battery_interval_s * 1000)), battery.tick)
 
     if cfg.grid_enabled:
         energy = GridEnergy(bus.list_names, reader)
@@ -212,17 +216,22 @@ def start():
         GLib.timeout_add_seconds(GRID_RESCAN_S, energy.rescan)
         grid = Feed(
             lambda: grid_payload(
-                *[reader.number(SYSTEM, "/Ac/Grid/L%d/Power" % n)
-                  for n in (1, 2, 3)],
+                *[reader.number(SYSTEM, "/Ac/Grid/L%d/Power" % n) for n in (1, 2, 3)],
                 energy_kwh=energy.kwh(),
-                nominal_voltage=cfg.nominal_voltage),
-            lambda p: mqtt.publish_set("MainsMeter", p))
+                nominal_voltage=cfg.nominal_voltage,
+            ),
+            lambda p: mqtt.publish_set("MainsMeter", p),
+        )
         GLib.timeout_add(max(1, int(cfg.grid_interval_s * 1000)), grid.tick)
 
     # 7. Sign of life, then start MQTT.
     def sign_of_life():
-        log.warning("sign of life: connected=%s power=%s status=%s",
-                    svc["/Connected"], svc["/Ac/Power"], svc["/Status"])
+        log.warning(
+            "sign of life: connected=%s power=%s status=%s",
+            svc["/Connected"],
+            svc["/Ac/Power"],
+            svc["/Status"],
+        )
         return True
 
     if cfg.sign_of_life_minutes > 0:
