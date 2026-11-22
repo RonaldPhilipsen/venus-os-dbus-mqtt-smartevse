@@ -91,19 +91,19 @@ The driver needs `Host` and `TopicPrefix`. All other keys have a default.
 
 | Key | Meaning | Default |
 |---|---|---|
-| `Host` | Host name or IP address of the MQTT broker. Required. | `192.168.1.10` |
+| `Host` | Host name or IP address of the MQTT broker. Required. Example: `192.168.1.10`. | none (required) |
 | `Port` | Port of the MQTT broker. | `1883` |
 | `Username` | User name of the broker. Leave it empty for none. | empty |
 | `Password` | Password of the broker. Leave it empty for none. | empty |
-| `TopicPrefix` | Topic prefix of the SmartEVSE. Required. | `SmartEVSE/51446` |
-| `OfflineTimeoutSeconds` | Seconds without MQTT data before the driver shows the charger as offline. | `60` |
+| `TopicPrefix` | Topic prefix of the SmartEVSE. Required. Example: `SmartEVSE/51446`. | none (required) |
+| `OfflineTimeoutSeconds` | Seconds without MQTT data before the driver shows the charger as offline. The value must be greater than 0. | `60` |
 
 ### [BATTERY]
 
 | Key | Meaning | Default |
 |---|---|---|
 | `Enabled` | Set to `1` to send the battery feed. | `1` |
-| `IntervalSeconds` | Seconds between battery updates. | `10` |
+| `IntervalSeconds` | Seconds between battery updates. The value must be greater than 0. | `10` |
 
 The driver reads `/Dc/Battery/Power` from `com.victronenergy.system`. It sends `round(power / NominalVoltage * 10)` to `<TopicPrefix>/Set/HomeBatteryCurrent`. The unit is deciamps. A positive value means that the battery charges. If the value is missing, the driver stops sending. The SmartEVSE then drops the value after 60 seconds.
 
@@ -112,9 +112,9 @@ The driver reads `/Dc/Battery/Power` from `com.victronenergy.system`. It sends `
 | Key | Meaning | Default |
 |---|---|---|
 | `Enabled` | Set to `1` to send the grid feed. | `0` |
-| `IntervalSeconds` | Seconds between grid updates. | `2` |
+| `IntervalSeconds` | Seconds between grid updates. The value must be greater than 0. | `2` |
 
-The driver reads the grid power of each phase from `com.victronenergy.system`. It sends the currents of the three phases, the total power, and the import energy to `<TopicPrefix>/Set/MainsMeter`. A positive value means import. For a single-phase grid meter, the driver sends 0 for L2 and L3. If the power values are missing, the driver stops sending. The SmartEVSE then reports a communication error.
+The driver reads the grid power of each phase from `com.victronenergy.system`. It sends the currents of the three phases, the total power, and the import energy to `<TopicPrefix>/Set/MainsMeter`. A positive value means import. If the L1 power is missing, the driver stops sending. If the L2 or the L3 power is missing, the driver sends 0 for that phase. Thus, for a single-phase grid meter, the driver sends 0 for L2 and L3. If the current of one phase is 200 A or more, the driver stops sending. This limit applies to import and to export. When the driver stops sending, the SmartEVSE reports a communication error.
 
 
 ## Mode mapping
@@ -148,6 +148,9 @@ The driver stores the last Victron mode in the Venus OS local settings. After a 
 |---|---|
 | Write in amperes | The driver sends `/Set/CurrentOverride` with the value times 10 (deciamps). |
 | Write in Auto (Solar) mode | The driver rejects the write. The SmartEVSE ignores overrides in Solar mode. |
+| Write below 0 A | The driver rejects the write. |
+| Write above the maximum current of the SmartEVSE (`MaxCurrent`) | The driver rejects the write. |
+| Write while the charger is offline | The driver rejects the write. |
 | Override is not 0 | The driver shows the override in amperes. |
 | Override is 0 | The driver shows the current that the SmartEVSE allows now. |
 
@@ -224,11 +227,11 @@ To see the service status, run this command:
 svstat /service/dbus-smartevse
 ```
 
-The output looks like `/service/dbus-smartevse: up (pid 5845) 185 seconds`. If the seconds stay under 5, the service crashes and daemontools restarts it again and again. Read the log to find the cause.
+The output looks like `/service/dbus-smartevse: up (pid 5845) 185 seconds`. If the driver cannot start, it logs the cause, waits 60 seconds, and stops. Daemontools then starts it again. Thus, if the seconds never go above 60, the driver fails at each start. Read the log to find the cause.
 
 If you see nothing in the log, raise the log level. In `/data/etc/dbus-smartevse/dbus-smartevse.py`, change `level=logging.WARNING` to `level=logging.INFO` or `level=logging.DEBUG`. Then restart the driver.
 
-If the driver stops with the message `dbus.exceptions.NameExistsException: Bus name already exists`, the service still runs, or another service uses that bus name. Stop the other service or change `DeviceInstance` in `config.ini`.
+If the log shows `startup failed` with `NameExistsException`, the service still runs, or another service uses that bus name. Stop the other service or change `DeviceInstance` in `config.ini`.
 
 To check what the SmartEVSE sends, subscribe to its topics on a machine that has the Mosquitto clients:
 

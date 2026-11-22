@@ -1,5 +1,6 @@
 """Handles writes from the GX screen and VRM. No dbus or paho imports."""
 import logging
+import math
 from typing import Callable, Optional, Tuple
 
 from smartevse.mapping import MODE_AUTO, MODE_MANUAL
@@ -61,7 +62,7 @@ class Controller:
                              now: float) -> bool:
         if not is_available(s, now, self._timeout_s):
             return False
-        if self._mode == MODE_AUTO or value < 0:
+        if self._mode == MODE_AUTO or not math.isfinite(value) or value < 0:
             return False
         if s.max_current_da is not None and value > s.max_current_da / 10:
             return False

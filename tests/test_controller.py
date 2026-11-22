@@ -66,6 +66,14 @@ def test_set_current_limits():
     assert sent == [("CurrentOverride", "0")]
 
 
+def test_set_current_rejects_non_finite():
+    c, sent, _ = make(mode=0)
+    s = live()  # MaxCurrent unknown
+    for value in (float("inf"), float("-inf"), float("nan")):
+        assert not c.on_set_current_write(value, s, now=100)
+    assert sent == []
+
+
 def test_writes_rejected_when_offline():
     c, sent, _ = make()
     stale = live()
@@ -106,10 +114,12 @@ def test_report_follows_evse_when_idle():
     assert c.mode == 0
 
 
-def test_stop_waits_for_pause():
+def test_stop_waits_for_pause(caplog):
     c, _, _ = make(mode=1)
     c.on_start_stop_write(0, live("Solar"), now=100)
     c.on_mode_report("Solar", now=103)
     assert c.mode == 1
     c.on_mode_report("Pause", now=104)
     c.check_pending(now=120)
+    assert c.mode == 1
+    assert not any("did not" in r.message for r in caplog.records)

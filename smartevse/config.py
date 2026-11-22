@@ -1,5 +1,6 @@
 """Configuration loader for dbus-smartevse."""
 import configparser
+import math
 from dataclasses import dataclass
 
 
@@ -43,7 +44,7 @@ def load_config(path: str) -> Config:
     def flag(section, key, default):
         return str(section.get(key, default)).strip().lower() in ("1", "true", "yes", "on")
 
-    return Config(
+    cfg = Config(
         device_instance=int(d.get("DeviceInstance", "43")),
         custom_name=d.get("CustomName", "SmartEVSE"),
         sign_of_life_minutes=int(d.get("SignOfLifeLog", "10")),
@@ -61,6 +62,12 @@ def load_config(path: str) -> Config:
         grid_enabled=flag(grid, "Enabled", "0"),
         grid_interval_s=float(grid.get("IntervalSeconds", "2")),
     )
+    for name, value in (("[MQTT] OfflineTimeoutSeconds", cfg.offline_timeout_s),
+                        ("[BATTERY] IntervalSeconds", cfg.battery_interval_s),
+                        ("[GRID] IntervalSeconds", cfg.grid_interval_s)):
+        if not (math.isfinite(value) and value > 0):
+            raise ValueError("%s must be greater than 0, not %s" % (name, value))
+    return cfg
 
 
 def serial_from_prefix(prefix: str) -> str:
