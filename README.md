@@ -164,10 +164,10 @@ The SmartEVSE accepts an override only in Normal and Smart mode. The value must 
     wget -O /tmp/dbus-smartevse.zip https://github.com/<owner>/<repo>/releases/latest/download/dbus-smartevse.zip
     ```
 
-3. Unzip the file to `/data/etc/dbus-smartevse`.
+3. Unzip the file into `/data/etc`. The zip has a top folder named `dbus-smartevse`, so the files go to `/data/etc/dbus-smartevse`. The zip has no `config.ini`, so an update keeps yours.
 
     ```bash
-    unzip -o /tmp/dbus-smartevse.zip -d /data/etc/dbus-smartevse
+    unzip -o /tmp/dbus-smartevse.zip -d /data/etc
     ```
 
 4. On the first install only, copy `config.sample.ini` to `config.ini`. Then edit `config.ini`. An update keeps your `config.ini`.
