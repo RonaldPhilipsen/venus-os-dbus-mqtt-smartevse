@@ -50,7 +50,6 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          fetch-depth: 0 # semVersie needs the full history
           persist-credentials: false
       - name: semVersie
         uses: RonaldPhilipsen/semVersie@d9fb879058f41166c1b18f7974eaed5620dd596b # v2.3.6
