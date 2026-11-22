@@ -1,7 +1,7 @@
 [tools]
 prek = "0.5.11"
 ruff = "0.17.6"
-ty = "0.0.107"
+ty = "0.0.108"
 
 [hooks]
 # Install the git hook after `mise install`, so the checks run before each commit.
