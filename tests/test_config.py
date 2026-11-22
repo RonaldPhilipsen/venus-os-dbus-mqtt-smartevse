@@ -37,3 +37,9 @@ def test_missing_host_raises(tmp_path):
 def test_serial_from_prefix():
     assert serial_from_prefix("SmartEVSE/51446") == "51446"
     assert serial_from_prefix("garage") == "garage"
+
+
+def test_percent_in_password_is_literal(tmp_path):
+    p = tmp_path / "c.ini"
+    p.write_text("[MQTT]\nHost = h\nTopicPrefix = x\nPassword = pa%ss\n")
+    assert load_config(str(p)).mqtt_password == "pa%ss"

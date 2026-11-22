@@ -24,7 +24,7 @@ class Config:
 
 
 def load_config(path: str) -> Config:
-    parser = configparser.ConfigParser()
+    parser = configparser.ConfigParser(interpolation=None)
     if not parser.read(path):
         raise ValueError("cannot read config file: %s" % path)
 
