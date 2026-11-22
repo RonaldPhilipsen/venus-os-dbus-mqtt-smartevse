@@ -1,0 +1,7 @@
+/docs/superpowers/
+__pycache__/
+*.pyc
+current.log
+.pytest_cache/
+config.ini
+!/service/log/
