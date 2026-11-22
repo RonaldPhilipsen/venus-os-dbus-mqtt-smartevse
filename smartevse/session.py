@@ -32,6 +32,10 @@ class Session:
             self._estimated_wh += reading.total_w * dt / 3600.0
         self._ev_energy_kwh = (s.ev_energy_wh or 0) / 1000.0
 
+    def pause(self) -> None:
+        """Forget the last time, so a data gap adds no time or energy."""
+        self._last_time = None
+
     @property
     def charging_time_s(self) -> int:
         return int(self._charging_s)

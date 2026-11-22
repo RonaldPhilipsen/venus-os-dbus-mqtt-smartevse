@@ -65,3 +65,16 @@ def test_no_counting_when_not_charging():
     sess.update(s, r, False, 0)
     sess.update(s, r, False, 500)
     assert sess.charging_time_s == 0 and sess.energy_kwh == 0
+
+
+def test_pause_drops_the_gap_of_an_outage():
+    sess = Session()
+    r = PowerReading(3680, 3680, 0, 0, 16.0)
+    s = EvseState(state="Charging", plug="Connected")
+    sess.update(s, r, False, 0)
+    sess.update(s, r, False, 1)
+    sess.pause()  # unavailable from t=1 to t=601
+    sess.update(s, r, False, 601)
+    sess.update(s, r, False, 602)
+    assert sess.charging_time_s == 2
+    assert sess.energy_kwh == pytest.approx(3680 * 2 / 3600 / 1000)

@@ -191,6 +191,8 @@ def main():
                                     cfg.nominal_voltage)
             if available:
                 session.update(state, reading, cfg.has_ev_meter, now)
+            else:
+                session.pause()
             publish_state(svc, state, reading, session, controller, available)
         except Exception:
             log.exception("update failed")
