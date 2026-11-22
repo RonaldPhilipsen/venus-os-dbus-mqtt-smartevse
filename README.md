@@ -44,6 +44,8 @@ You can control three things from the GX screen and from VRM:
 - Start and stop
 - The charge current
 
+The "Control panel" button for the charger in VRM does not work. VRM tries to open the web page of a Victron EV Charging Station, and the SmartEVSE does not have that page. VRM then shows an error that starts with `Tunnel to installation was established`. To open the SmartEVSE web page, go to the IP address of the SmartEVSE in a browser on your local network.
+
 The driver has two optional feeds. A feed is a stream of values that the driver sends to the SmartEVSE.
 
 - **Battery feed.** The driver sends the power of the home battery to the SmartEVSE. In Solar mode, the SmartEVSE then counts battery charging as surplus for the car. It counts battery discharging against the surplus. The car gets priority over battery charging. The car does not drain the battery. The feed is on by default.
@@ -95,7 +97,7 @@ The driver needs `Host` and `TopicPrefix`. All other keys have a default.
 | `Port` | Port of the MQTT broker. | `1883` |
 | `Username` | User name of the broker. Leave it empty for none. | empty |
 | `Password` | Password of the broker. Leave it empty for none. | empty |
-| `TopicPrefix` | Topic prefix of the SmartEVSE. Required. Examples: `SmartEVSE/51446` (newer firmware) and `SmartEVSE-7277` (older firmware). | none (required) |
+| `TopicPrefix` | Topic prefix of the SmartEVSE. Required. Examples: `SmartEVSE/51446` (newer firmware) and `SmartEVSE-1234` (older firmware). | none (required) |
 | `OfflineTimeoutSeconds` | Seconds without MQTT data before the driver shows the charger as offline. The value must be greater than 0. | `60` |
 
 ### [BATTERY]
@@ -264,4 +266,14 @@ When a pull request merges into `main`, a GitHub workflow builds `dbus-smartevse
 
 ## Screenshots
 
-The owner adds screenshots here.
+The GX overview page shows the charger in the EVCS tile. In this image, the charger waits for the car to start.
+
+![GX overview with the SmartEVSE idle](docs/images/overview.png)
+
+During a charge, the EVCS tile shows the power, the charge current, and the status `Charging`.
+
+![GX overview with the SmartEVSE charging](docs/images/charging.png)
+
+The VRM device list shows the charger as an EV charging station. The serial number is hidden in this image.
+
+![SmartEVSE in the VRM device list](docs/images/device_list.png)
