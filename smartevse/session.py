@@ -24,6 +24,7 @@ class Session:
             self._charging_s = 0.0
             self._estimated_wh = 0.0
             self._ev_energy_kwh = 0.0
+            self._last_time = None  # the next session starts at the next call
             return
 
         if s.state == "Charging":
