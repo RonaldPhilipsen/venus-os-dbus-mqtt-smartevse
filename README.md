@@ -57,7 +57,7 @@ The driver never changes the SmartEVSE mode or current without a write by a pers
 Set up these items in the web interface of the SmartEVSE.
 
 1. **MQTT broker.** Enter the host, the port, the user name, and the password of your MQTT broker. The SmartEVSE connects to one broker only. The driver connects to the same broker. Use the same values in `config.ini`.
-1. **Topic prefix.** The default is `SmartEVSE/<serial>`. Use the same prefix in `TopicPrefix` in `config.ini`. The driver takes its `/Serial` value from the part after the last `/`.
+1. **Topic prefix.** The default depends on the firmware. Newer firmware uses `SmartEVSE/<serial>`, and older firmware uses `SmartEVSE-<serial>`. Read the prefix on the MQTT page of the SmartEVSE web interface. Use the same prefix in `TopicPrefix` in `config.ini`. The driver takes its `/Serial` value from the part after the last `/`. For a prefix without a `/`, the driver uses the whole prefix.
 1. **Mains meter.** The SmartEVSE needs a mains meter for every mode except Normal. Choose the type that fits your setup.
     - If you use the battery feed only, keep your mains meter, for example a HomeWizard P1. The battery feed works with any mains meter type.
     - If you want the grid feed, set the mains meter type to `API`. A SmartEVSE with a HomeWizard P1 ignores the grid feed. A SmartEVSE accepts the grid feed only on a master unit.
@@ -95,7 +95,7 @@ The driver needs `Host` and `TopicPrefix`. All other keys have a default.
 | `Port` | Port of the MQTT broker. | `1883` |
 | `Username` | User name of the broker. Leave it empty for none. | empty |
 | `Password` | Password of the broker. Leave it empty for none. | empty |
-| `TopicPrefix` | Topic prefix of the SmartEVSE. Required. Example: `SmartEVSE/51446`. | none (required) |
+| `TopicPrefix` | Topic prefix of the SmartEVSE. Required. Examples: `SmartEVSE/51446` (newer firmware) and `SmartEVSE-7277` (older firmware). | none (required) |
 | `OfflineTimeoutSeconds` | Seconds without MQTT data before the driver shows the charger as offline. The value must be greater than 0. | `60` |
 
 ### [BATTERY]
@@ -131,7 +131,7 @@ The Victron mode `Manual` maps to the SmartEVSE mode `Smart`. The Victron mode `
 
 If the SmartEVSE is in `Off` or `Pause`, a mode write stores the new mode and sends nothing. The next start sends the stored mode. In all other cases, the driver sends the new mode at once. If the SmartEVSE does not confirm the mode within 10 seconds, the driver logs a warning and shows the mode that the SmartEVSE reports.
 
-The driver stores the last Victron mode in the Venus OS local settings. After a restart, it uses the stored mode. Without a stored mode, it uses Auto (Solar). This choice prevents charging from the grid by mistake.
+The driver stores the last Victron mode in the Venus OS localsettings service. After a restart, it uses the stored mode. Without a stored mode, it uses Auto (Solar). This choice prevents charging from the grid by mistake.
 
 ### /StartStop
 
@@ -199,7 +199,7 @@ Run this command:
 bash /data/etc/dbus-smartevse/uninstall.sh
 ```
 
-The script removes the line from `/data/rc.local`, stops the service, and removes the service link. Then it asks you if it must delete the driver files and `config.ini`. Reboot the device after you uninstall.
+The script removes the line from `/data/rc.local`, stops the service, and removes the service link. Then it asks you a question: delete the driver files and `config.ini`, yes or no? Reboot the device after you uninstall.
 
 
 ## Restart
@@ -227,13 +227,13 @@ To see the service status, run this command:
 svstat /service/dbus-smartevse
 ```
 
-The output looks like `/service/dbus-smartevse: up (pid 5845) 185 seconds`. If the driver cannot start, it logs the cause, waits 60 seconds, and stops. Daemontools then starts it again. Thus, if the seconds never go above 60, the driver fails at each start. Read the log to find the cause.
+The output looks like `/service/dbus-smartevse: up (pid 5845) 185 seconds`. If the driver cannot start, it logs the cause, waits 60 seconds, and stops. Daemontools then starts it again. If the seconds never go above 60, the driver fails at each start. Read the log to find the cause.
 
 If you see nothing in the log, raise the log level. In `/data/etc/dbus-smartevse/dbus-smartevse.py`, change `level=logging.WARNING` to `level=logging.INFO` or `level=logging.DEBUG`. Then restart the driver.
 
 If the log shows `startup failed` with `NameExistsException`, the service still runs, or another service uses that bus name. Stop the other service or change `DeviceInstance` in `config.ini`.
 
-To check what the SmartEVSE sends, subscribe to its topics on a machine that has the Mosquitto clients:
+To make sure that the SmartEVSE sends data, subscribe to its topics on a machine that has the Mosquitto clients:
 
 ```bash
 mosquitto_sub -h <broker> -t 'SmartEVSE/51446/#' -v

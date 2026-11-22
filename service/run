@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "*** starting dbus-smartevse ***"
+exec python3 /data/etc/dbus-smartevse/dbus-smartevse.py 2>&1
