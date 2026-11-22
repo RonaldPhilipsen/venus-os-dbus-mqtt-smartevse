@@ -246,6 +246,19 @@ The owner tested the driver on these Venus OS versions:
 The driver needs Python 3.8 or newer. It bundles paho-mqtt 2.1.0 in the `ext` folder. The bundled copy takes priority over any paho-mqtt in Venus OS.
 
 
+## Versioning
+
+The project uses [semVersie](https://github.com/RonaldPhilipsen/semVersie) to choose a version number for each release. semVersie reads the titles of the merged pull requests. It does not read the code.
+
+Each pull request title must follow the [conventional commits](https://www.conventionalcommits.org/) format:
+
+- `fix: ...` raises the patch number (1.2.3 becomes 1.2.4).
+- `feat: ...` raises the minor number (1.2.3 becomes 1.3.0).
+- `feat!: ...` marks a breaking change. It raises the major number (1.2.3 becomes 2.0.0).
+
+When a pull request merges into `main`, a GitHub workflow builds `dbus-smartevse.zip` and publishes it as a release. The version shows on the GX device in the `/Mgmt/ProcessVersion` path, together with the Python version. A copy of the code that is not from a release shows `0.0.0-dev`.
+
+
 ## Screenshots
 
 The owner adds screenshots here.

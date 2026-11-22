@@ -17,6 +17,7 @@ from gi.repository import GLib  # noqa: E402
 from settingsdevice import SettingsDevice  # noqa: E402
 from vedbus import VeDbusItemImport, VeDbusService  # noqa: E402
 
+from smartevse import __version__  # noqa: E402
 from smartevse.config import load_config, serial_from_prefix  # noqa: E402
 from smartevse.controller import Controller  # noqa: E402
 from smartevse.dbus_service import (PATHS, WRITEABLE_PATHS,  # noqa: E402
@@ -108,7 +109,7 @@ def main():
                        % cfg.device_instance)
     svc.add_path("/Mgmt/ProcessName", __file__)
     svc.add_path("/Mgmt/ProcessVersion",
-                 "Python " + platform.python_version())
+                 "%s on Python %s" % (__version__, platform.python_version()))
     svc.add_path("/Mgmt/Connection",
                  "MQTT %s:%d" % (cfg.mqtt_host, cfg.mqtt_port))
     svc.add_path("/DeviceInstance", cfg.device_instance)
