@@ -1,5 +1,6 @@
 import os
 from dataclasses import replace
+from typing import Any
 
 import pytest
 
@@ -17,9 +18,9 @@ class FakeMsg:
 
 class FakeClient:
     def __init__(self):
-        self.on_connect = None
-        self.on_disconnect = None
-        self.on_message = None
+        self.on_connect: Any = None
+        self.on_disconnect: Any = None
+        self.on_message: Any = None
         self.subscribed = []
         self.published = []
         self.calls = []
@@ -66,8 +67,12 @@ class Setup:
         self.fake = FakeClient()
         self.msgs, self.links, self.scheduled = [], [], 0
         self.m = SmartEvseMqtt(
-            self.cfg, lambda s, p: self.msgs.append((s, p)),
-            self.links.append, self.run_now, client_factory=lambda: self.fake)
+            self.cfg,
+            lambda s, p: self.msgs.append((s, p)),
+            self.links.append,
+            self.run_now,
+            client_factory=lambda: self.fake,
+        )
 
     def run_now(self, fn, *a):
         self.scheduled += 1
@@ -98,6 +103,7 @@ def test_connect_v2_signature_and_reason_code_object(s):
     class RC:
         value = 0
         is_failure = False
+
     s.m.start()
     s.fake.fire_connect_v2(rc=RC())
     assert s.links == [True]
@@ -115,6 +121,7 @@ def test_failed_connect_reason_code_object(s):
     class RC:
         value = 135
         is_failure = True
+
     s.m.start()
     s.fake.fire_connect_v2(rc=RC())
     assert s.links == []

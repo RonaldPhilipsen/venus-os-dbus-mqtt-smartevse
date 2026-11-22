@@ -1,21 +1,26 @@
 """Handles writes from the GX screen and VRM. No dbus or paho imports."""
+
 import logging
 import math
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional
 
 from smartevse.mapping import MODE_AUTO, MODE_MANUAL
 from smartevse.state import EvseState, is_available
 
 CONFIRM_TIMEOUT_S = 10.0
 _EVSE_MODE = {MODE_MANUAL: "Smart", MODE_AUTO: "Solar"}
-_REPORT_TO_MODE = {"Smart": MODE_MANUAL, "Normal": MODE_MANUAL,
-                   "Solar": MODE_AUTO}
+_REPORT_TO_MODE = {"Smart": MODE_MANUAL, "Normal": MODE_MANUAL, "Solar": MODE_AUTO}
 
 
 class Controller:
-    def __init__(self, publish: Callable[[str, str], None],
-                 store_mode: Callable[[int], None], initial_mode: int,
-                 timeout_s: float, log: logging.Logger) -> None:
+    def __init__(
+        self,
+        publish: Callable[[str, str], None],
+        store_mode: Callable[[int], None],
+        initial_mode: int,
+        timeout_s: float,
+        log: logging.Logger,
+    ) -> None:
         self._publish = publish
         self._store_mode = store_mode
         self._mode = initial_mode
@@ -46,8 +51,7 @@ class Controller:
             self._send_mode(_EVSE_MODE[value], now)
         return True
 
-    def on_start_stop_write(self, value: int, s: EvseState,
-                            now: float) -> bool:
+    def on_start_stop_write(self, value: int, s: EvseState, now: float) -> bool:
         if not is_available(s, now, self._timeout_s):
             return False
         if value == 1:
@@ -58,8 +62,7 @@ class Controller:
             return False
         return True
 
-    def on_set_current_write(self, value: float, s: EvseState,
-                             now: float) -> bool:
+    def on_set_current_write(self, value: float, s: EvseState, now: float) -> bool:
         if not is_available(s, now, self._timeout_s):
             return False
         if self._mode == MODE_AUTO or not math.isfinite(value) or value < 0:
@@ -90,6 +93,5 @@ class Controller:
         if now - sent_at < CONFIRM_TIMEOUT_S:
             return
         self._pending = None
-        self._log.warning("SmartEVSE did not switch to %s within %d s",
-                          expected, CONFIRM_TIMEOUT_S)
+        self._log.warning("SmartEVSE did not switch to %s within %d s", expected, CONFIRM_TIMEOUT_S)
         self._follow(self._last_report)

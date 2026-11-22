@@ -28,7 +28,7 @@ mkdir "$stage/dbus-smartevse"
 cd "$root"
 # Tracked files only. Leave out tests, CI, docs, this script, and dotfiles.
 git ls-files -z \
-    | grep -zvE '^(tests|\.github|docs|scripts)/|(^|/)\.[^/]*$' \
+    | grep -zvE '^(tests|\.github|docs|scripts)/|^(mise\.toml|pyproject\.toml)$|(^|/)\.[^/]*$' \
     | xargs -0 -I{} cp --parents {} "$stage/dbus-smartevse/"
 
 # Write the version into the staged copy only.

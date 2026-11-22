@@ -16,6 +16,7 @@ GitHub repository: `https://github.com/<owner>/<repo>`. The owner of the reposit
 1. [Restart](#restart)
 1. [Debugging](#debugging)
 1. [Compatibility](#compatibility)
+1. [Development](#development)
 1. [Screenshots](#screenshots)
 
 
@@ -249,6 +250,44 @@ The owner tested the driver on these Venus OS versions:
 - Not filled in yet. The owner adds the tested versions here.
 
 The driver needs Python 3.8 or newer. It bundles paho-mqtt 2.1.0 in the `ext` folder. The bundled copy takes priority over any paho-mqtt in Venus OS.
+
+
+## Development
+
+The project uses [mise](https://mise.jdx.dev) to install the development tools. `mise.toml` pins their versions:
+
+- [ruff](https://docs.astral.sh/ruff/) checks and formats the code.
+- [ty](https://docs.astral.sh/ty/) checks the types.
+- [prek](https://prek.j178.dev) runs ruff and ty as the hooks in `.pre-commit-config.yaml`.
+
+To set up a new clone, do these steps in the project folder:
+
+1. Install the tools. A `postinstall` hook in `mise.toml` then runs `prek install`, so the checks run before each commit.
+
+    ```bash
+    mise install
+    ```
+
+2. Make sure that ty can find pytest, because ty also checks the tests. ty uses a `.venv` folder in the project folder by itself.
+
+    ```bash
+    python3 -m venv .venv
+    .venv/bin/pip install pytest
+    ```
+
+3. Run all checks on all files.
+
+    ```bash
+    mise exec -- prek run --all-files
+    ```
+
+4. Run the tests.
+
+    ```bash
+    python3 -m pytest -q
+    ```
+
+The GitHub workflow `Qualify` runs the same prek checks and the tests for each pull request. The release zip does not contain `mise.toml`, `pyproject.toml`, or `.pre-commit-config.yaml`.
 
 
 ## Versioning

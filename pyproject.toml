@@ -1,0 +1,26 @@
+# Tool configuration only. The driver is not a Python package.
+
+[tool.ruff]
+target-version = "py38"
+line-length = 100
+extend-exclude = ["ext", "agent", ".agents", ".claude", "docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+# Keep the %-formatting style of the SmartEVSE driver.
+ignore = ["UP031", "UP032"]
+
+[tool.ty.environment]
+python-version = "3.8"
+# paho-mqtt is bundled in ext. ty reads it, but does not check it.
+extra-paths = ["ext"]
+
+[tool.ty.src]
+exclude = ["ext", "agent", ".agents", ".claude", "docs"]
+
+# The GX device provides these modules. They are not installed on a PC.
+[[tool.ty.overrides]]
+include = ["dbus-smartevse.py"]
+
+[tool.ty.overrides.rules]
+import-not-found = "ignore"

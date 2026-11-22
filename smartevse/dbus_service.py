@@ -3,11 +3,17 @@
 publish_state writes to any mapping with [] access (a VeDbusService or a
 dict), so this module does not import dbus or vedbus.
 """
-from typing import Any, Callable, Dict, MutableMapping, Optional
+
+from typing import Any, Callable, MutableMapping, Optional
 
 from smartevse.controller import Controller
-from smartevse.mapping import (PowerReading, victron_mode, victron_set_current,
-                               victron_start_stop, victron_status)
+from smartevse.mapping import (
+    PowerReading,
+    victron_mode,
+    victron_set_current,
+    victron_start_stop,
+    victron_status,
+)
 from smartevse.session import Session
 from smartevse.state import EvseState
 
@@ -17,6 +23,7 @@ def _unit(fmt: str) -> Callable[[str, Any], str]:
         if value is None:
             return "---"
         return fmt.format(value)
+
     return text
 
 
@@ -59,9 +66,14 @@ def _amps(deciamps: Optional[int]) -> Optional[float]:
     return None if deciamps is None else deciamps / 10
 
 
-def publish_state(svc: MutableMapping[str, Any], s: EvseState,
-                  reading: PowerReading, sess: Session,
-                  controller: Controller, available: bool) -> None:
+def publish_state(
+    svc: MutableMapping[str, Any],
+    s: EvseState,
+    reading: PowerReading,
+    sess: Session,
+    controller: Controller,
+    available: bool,
+) -> None:
     if available:
         last_start_stop = _read(svc, "/StartStop")
         values = {
@@ -76,7 +88,8 @@ def publish_state(svc: MutableMapping[str, Any], s: EvseState,
             "/Status": victron_status(s),
             "/Mode": victron_mode(s.mode, controller.mode),
             "/StartStop": victron_start_stop(
-                s.mode, 0 if last_start_stop is None else last_start_stop),
+                s.mode, 0 if last_start_stop is None else last_start_stop
+            ),
             "/SetCurrent": victron_set_current(s),
             "/MCU/Temperature": s.temp_c,
         }

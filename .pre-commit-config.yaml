@@ -1,0 +1,20 @@
+# Run with prek: `prek run --all-files`. mise.toml pins the tool versions.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: ruff check --force-exclude
+        language: system
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: ruff format
+        entry: ruff format --check --force-exclude
+        language: system
+        types_or: [python, pyi]
+      - id: ty
+        name: ty check
+        entry: ty check
+        language: system
+        types_or: [python, pyi]
+        pass_filenames: false

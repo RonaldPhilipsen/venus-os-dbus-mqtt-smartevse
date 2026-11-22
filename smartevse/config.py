@@ -1,4 +1,5 @@
 """Configuration loader for dbus-smartevse."""
+
 import configparser
 import math
 from dataclasses import dataclass
@@ -62,9 +63,11 @@ def load_config(path: str) -> Config:
         grid_enabled=flag(grid, "Enabled", "0"),
         grid_interval_s=float(grid.get("IntervalSeconds", "2")),
     )
-    for name, value in (("[MQTT] OfflineTimeoutSeconds", cfg.offline_timeout_s),
-                        ("[BATTERY] IntervalSeconds", cfg.battery_interval_s),
-                        ("[GRID] IntervalSeconds", cfg.grid_interval_s)):
+    for name, value in (
+        ("[MQTT] OfflineTimeoutSeconds", cfg.offline_timeout_s),
+        ("[BATTERY] IntervalSeconds", cfg.battery_interval_s),
+        ("[GRID] IntervalSeconds", cfg.grid_interval_s),
+    ):
         if not (math.isfinite(value) and value > 0):
             raise ValueError("%s must be greater than 0, not %s" % (name, value))
     return cfg

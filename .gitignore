@@ -5,3 +5,4 @@ current.log
 .pytest_cache/
 config.ini
 !/service/log/
+.venv/

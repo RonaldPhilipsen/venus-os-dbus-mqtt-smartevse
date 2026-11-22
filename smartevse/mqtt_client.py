@@ -1,4 +1,5 @@
 """MQTT adapter. paho callbacks run on paho's thread and only call schedule()."""
+
 import logging
 from typing import Any, Callable, Optional
 
@@ -8,12 +9,13 @@ log = logging.getLogger("smartevse.mqtt")
 def topic_suffix(prefix: str, topic: str) -> Optional[str]:
     """Return the part of topic after prefix (starts with "/"), or None."""
     if topic.startswith(prefix + "/"):
-        return topic[len(prefix):]
+        return topic[len(prefix) :]
     return None
 
 
 def _default_client_factory() -> Any:
     import paho.mqtt.client as mqtt  # imported here so tests run without paho
+
     version = getattr(mqtt, "CallbackAPIVersion", None)
     if version is not None:
         return mqtt.Client(version.VERSION2)
@@ -27,9 +29,14 @@ def _is_success(rc: Any) -> bool:
 
 
 class SmartEvseMqtt:
-    def __init__(self, cfg, on_message: Callable[[str, str], None],
-                 on_link: Callable[[bool], None], schedule: Callable[..., Any],
-                 client_factory: Optional[Callable[[], Any]] = None) -> None:
+    def __init__(
+        self,
+        cfg,
+        on_message: Callable[[str, str], None],
+        on_link: Callable[[bool], None],
+        schedule: Callable[..., Any],
+        client_factory: Optional[Callable[[], Any]] = None,
+    ) -> None:
         self._cfg = cfg
         self._prefix = cfg.topic_prefix
         self._on_message = on_message
@@ -43,8 +50,7 @@ class SmartEvseMqtt:
 
     def start(self) -> None:
         if self._cfg.mqtt_username:
-            self._client.username_pw_set(self._cfg.mqtt_username,
-                                         self._cfg.mqtt_password)
+            self._client.username_pw_set(self._cfg.mqtt_username, self._cfg.mqtt_password)
         self._client.reconnect_delay_set(min_delay=1, max_delay=60)
         self._client.connect_async(self._cfg.mqtt_host, self._cfg.mqtt_port)
         self._client.loop_start()
@@ -52,8 +58,7 @@ class SmartEvseMqtt:
     def publish_set(self, name: str, payload: str) -> None:
         if not self._connected:
             return
-        self._client.publish("%s/Set/%s" % (self._prefix, name), payload,
-                             qos=1, retain=False)
+        self._client.publish("%s/Set/%s" % (self._prefix, name), payload, qos=1, retain=False)
 
     # paho 1.x: (client, userdata, flags, rc)
     # paho 2.x: (client, userdata, flags, reason_code, properties)

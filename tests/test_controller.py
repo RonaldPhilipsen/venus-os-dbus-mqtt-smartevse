@@ -6,8 +6,9 @@ from smartevse.state import EvseState
 
 def make(mode=1):
     sent, stored = [], []
-    c = Controller(lambda n, p: sent.append((n, p)), stored.append, mode, 60,
-                   logging.getLogger("t"))
+    c = Controller(
+        lambda n, p: sent.append((n, p)), stored.append, mode, 60, logging.getLogger("t")
+    )
     return c, sent, stored
 
 

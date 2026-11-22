@@ -1,4 +1,5 @@
 """SmartEVSE state, built from MQTT messages. No dbus or paho imports."""
+
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -14,8 +15,7 @@ class EvseState:
     override_da: Optional[int] = None
     max_current_da: Optional[int] = None
     phases: Optional[int] = None
-    ev_current_da: List[Optional[int]] = field(
-        default_factory=lambda: [None, None, None])
+    ev_current_da: List[Optional[int]] = field(default_factory=lambda: [None, None, None])
     ev_power_w: Optional[int] = None
     ev_energy_wh: Optional[int] = None
     temp_c: Optional[int] = None
@@ -55,8 +55,7 @@ _TOPICS = {
 }
 
 
-def apply_message(state: EvseState, suffix: str, payload: str,
-                  now: float) -> None:
+def apply_message(state: EvseState, suffix: str, payload: str, now: float) -> None:
     """Update state from one message. Bad numbers keep the last value."""
     state.last_message = now
     entry = _TOPICS.get(suffix)
